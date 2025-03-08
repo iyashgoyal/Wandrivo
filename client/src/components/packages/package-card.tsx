@@ -34,7 +34,10 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
       className="h-full"
     >
       <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow duration-300">
-        <div className="aspect-[4/3] relative overflow-hidden">
+        <div 
+          className="aspect-[4/3] relative overflow-hidden cursor-pointer"
+          onClick={() => setLocation(`/packages/${pkg.id}`)}
+        >
           <motion.img
             src={pkg.imageUrl}
             alt={pkg.title}
@@ -43,7 +46,7 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
             transition={{ duration: 0.3 }}
           />
           <motion.div 
-            className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-full"
+            className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
@@ -54,10 +57,11 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
 
         <CardContent className="p-4 flex-grow">
           <motion.h3 
-            className="text-xl font-semibold mb-2 line-clamp-2"
+            className="text-lg md:text-xl font-semibold mb-2 line-clamp-2 hover:text-primary cursor-pointer"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
+            onClick={() => setLocation(`/packages/${pkg.id}`)}
           >
             {pkg.title}
           </motion.h3>
@@ -81,9 +85,16 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
           </motion.div>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0">
+        <CardFooter className="p-4 pt-0 space-x-2">
           <Button 
-            className="w-full bg-primary hover:bg-primary/90"
+            variant="outline"
+            className="w-1/2"
+            onClick={() => setLocation(`/packages/${pkg.id}`)}
+          >
+            View Details
+          </Button>
+          <Button 
+            className="w-1/2 bg-primary hover:bg-primary/90"
             onClick={() => setLocation(`/contact?package=${pkg.id}`)}
           >
             Book Now

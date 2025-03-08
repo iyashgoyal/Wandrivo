@@ -15,29 +15,24 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getPackages(params?: SearchParams): Promise<Package[]> {
-    let query = db.select().from(packages);
+    const conditions = [];
 
-    if (params) {
-      const conditions = [];
-
-      if (params.category) {
-        // Ensure exact match for category
-        conditions.push(eq(packages.category, params.category));
-      }
-      if (params.destination) {
-        conditions.push(ilike(packages.destination, `%${params.destination}%`));
-      }
-      if (params.minPrice !== undefined) {
-        conditions.push(gte(packages.price, params.minPrice));
-      }
-      if (params.maxPrice !== undefined) {
-        conditions.push(lte(packages.price, params.maxPrice));
-      }
-
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
-      }
+    if (params?.category) {
+      conditions.push(eq(packages.category, params.category));
     }
+    if (params?.destination) {
+      conditions.push(ilike(packages.destination, `%${params.destination}%`));
+    }
+    if (params?.minPrice !== undefined) {
+      conditions.push(gte(packages.price, params.minPrice));
+    }
+    if (params?.maxPrice !== undefined) {
+      conditions.push(lte(packages.price, params.maxPrice));
+    }
+
+    const query = conditions.length > 0
+      ? db.select().from(packages).where(and(...conditions))
+      : db.select().from(packages);
 
     return await query;
   }
