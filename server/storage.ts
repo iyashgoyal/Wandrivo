@@ -1,6 +1,6 @@
 import { type Package, type InsertPackage, type Inquiry, type InsertInquiry, type SearchParams, packages, inquiries } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, ilike } from "drizzle-orm";
+import { eq, and, gte, lte, ilike, asc, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Package operations
@@ -17,12 +17,14 @@ export class DatabaseStorage implements IStorage {
   async getPackages(params?: SearchParams): Promise<Package[]> {
     const conditions = [];
 
+    // Apply filters
     if (params?.category) {
-      // We need exact match for category
       conditions.push(eq(packages.category, params.category));
     }
+    if (params?.subCategory) {
+      conditions.push(eq(packages.subCategory, params.subCategory));
+    }
     if (params?.destination) {
-      // Case-insensitive partial match for destination
       conditions.push(ilike(packages.destination, `%${params.destination}%`));
     }
     if (params?.minPrice !== undefined) {
@@ -31,11 +33,38 @@ export class DatabaseStorage implements IStorage {
     if (params?.maxPrice !== undefined) {
       conditions.push(lte(packages.price, params.maxPrice));
     }
+    if (params?.minDuration !== undefined) {
+      conditions.push(gte(packages.duration, params.minDuration));
+    }
+    if (params?.maxDuration !== undefined) {
+      conditions.push(lte(packages.duration, params.maxDuration));
+    }
 
     try {
-      const query = conditions.length > 0
-        ? db.select().from(packages).where(and(...conditions))
-        : db.select().from(packages);
+      let query = db.select().from(packages);
+
+      // Apply filters
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      // Apply sorting
+      if (params?.sortBy) {
+        switch (params.sortBy) {
+          case 'price_asc':
+            query = query.orderBy(asc(packages.price));
+            break;
+          case 'price_desc':
+            query = query.orderBy(desc(packages.price));
+            break;
+          case 'duration_asc':
+            query = query.orderBy(asc(packages.duration));
+            break;
+          case 'duration_desc':
+            query = query.orderBy(desc(packages.duration));
+            break;
+        }
+      }
 
       return await query;
     } catch (error) {

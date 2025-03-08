@@ -36,7 +36,11 @@ export const searchParamsSchema = z.object({
   category: z.string().optional(),
   destination: z.string().optional(),
   minPrice: z.number().optional(),
-  maxPrice: z.number().optional()
+  maxPrice: z.number().optional(),
+  minDuration: z.number().optional(),
+  maxDuration: z.number().optional(),
+  sortBy: z.enum(['price_asc', 'price_desc', 'duration_asc', 'duration_desc']).optional(),
+  subCategory: z.string().optional()
 });
 
 export type SearchParams = z.infer<typeof searchParamsSchema>;

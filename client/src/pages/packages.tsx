@@ -12,6 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Slider,
+  SliderTrack,
+  SliderRange,
+  SliderThumb,
+} from "@/components/ui/slider";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Filter, SortAsc, SortDesc } from "lucide-react";
 
 const categories = [
   "All",
@@ -21,6 +36,13 @@ const categories = [
   "Honeymoon Packages",
   "Weekend Getaways",
   "Adventure Trips",
+];
+
+const sortOptions = [
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "duration_asc", label: "Duration: Shortest to Longest" },
+  { value: "duration_desc", label: "Duration: Longest to Shortest" },
 ];
 
 export default function Packages() {
@@ -34,6 +56,9 @@ export default function Packages() {
     destination: initialDestination,
     minPrice: undefined,
     maxPrice: undefined,
+    minDuration: undefined,
+    maxDuration: undefined,
+    sortBy: undefined,
   });
 
   const { data: packages, isLoading } = useQuery<Package[]>({
@@ -51,13 +76,95 @@ export default function Packages() {
     }));
   };
 
+  const handlePriceChange = (values: number[]) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      minPrice: values[0],
+      maxPrice: values[1],
+    }));
+  };
+
+  const handleDurationChange = (values: number[]) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      minDuration: values[0],
+      maxDuration: values[1],
+    }));
+  };
+
+  const handleSortChange = (value: string) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      sortBy: value as SearchParams["sortBy"],
+    }));
+  };
+
   return (
     <div className="py-16 px-4">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-12">Travel Packages</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold">Travel Packages</h1>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="md:hidden">
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Filter Packages</SheetTitle>
+                <SheetDescription>
+                  Customize your search with advanced filters
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6 space-y-6">
+                {/* Mobile Filters */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Category</label>
+                    <Select
+                      value={searchParams.category || "All"}
+                      onValueChange={handleCategoryChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Sort By</label>
+                    <Select
+                      value={searchParams.sortBy}
+                      onValueChange={handleSortChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sortOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
 
-        {/* Search and Filter Section */}
-        <div className="mb-8 space-y-4 md:space-y-0 md:flex md:items-center md:space-x-4">
+        {/* Desktop Search and Filters */}
+        <div className="hidden md:flex items-center space-x-4 mb-8">
           <Input
             type="text"
             placeholder="Search destinations..."
@@ -82,6 +189,22 @@ export default function Packages() {
             </SelectContent>
           </Select>
 
+          <Select
+            value={searchParams.sortBy}
+            onValueChange={handleSortChange}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button
             variant="outline"
             onClick={() =>
@@ -90,6 +213,9 @@ export default function Packages() {
                 destination: "",
                 minPrice: undefined,
                 maxPrice: undefined,
+                minDuration: undefined,
+                maxDuration: undefined,
+                sortBy: undefined,
               })
             }
           >
