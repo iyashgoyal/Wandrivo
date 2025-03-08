@@ -1,99 +1,73 @@
-import { type Package, type InsertPackage, type Inquiry, type InsertInquiry, type SearchParams } from "@shared/schema";
+import { type Package, type InsertPackage, type Inquiry, type InsertInquiry, type SearchParams, packages, inquiries } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, gte, lte, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // Package operations
   getPackages(params?: SearchParams): Promise<Package[]>;
   getPackage(id: number): Promise<Package | undefined>;
   createPackage(pkg: InsertPackage): Promise<Package>;
-  
+
   // Inquiry operations
   getInquiries(): Promise<Inquiry[]>;
   createInquiry(inquiry: InsertInquiry): Promise<Inquiry>;
 }
 
-export class MemStorage implements IStorage {
-  private packages: Map<number, Package>;
-  private inquiries: Map<number, Inquiry>;
-  private currentPackageId: number;
-  private currentInquiryId: number;
-
-  constructor() {
-    this.packages = new Map();
-    this.inquiries = new Map();
-    this.currentPackageId = 1;
-    this.currentInquiryId = 1;
-    this.initializeData();
-  }
-
-  private initializeData() {
-    const samplePackages: InsertPackage[] = [
-      {
-        title: "Maldives Paradise Escape",
-        description: "Experience luxury in the heart of the Indian Ocean",
-        imageUrl: "https://images.unsplash.com/photo-1573843981267-be1999ff37cd",
-        price: 2999,
-        duration: 7,
-        category: "International Trips",
-        subCategory: "Honeymoon Packages",
-        destination: "Maldives"
-      },
-      {
-        title: "Swiss Alps Adventure",
-        description: "Explore the majestic Swiss Alps",
-        imageUrl: "https://images.unsplash.com/photo-1531795255027-67f7bf42e2e8",
-        price: 3499,
-        duration: 10,
-        category: "International Trips",
-        subCategory: "Adventure Trips",
-        destination: "Switzerland"
-      }
-    ];
-
-    samplePackages.forEach(pkg => this.createPackage(pkg));
-  }
-
+export class DatabaseStorage implements IStorage {
   async getPackages(params?: SearchParams): Promise<Package[]> {
-    let packages = Array.from(this.packages.values());
-    
+    let query = db.select().from(packages);
+
     if (params) {
+      const conditions = [];
+
       if (params.category) {
-        packages = packages.filter(p => p.category === params.category);
+        conditions.push(eq(packages.category, params.category));
       }
       if (params.destination) {
-        packages = packages.filter(p => p.destination.toLowerCase().includes(params.destination!.toLowerCase()));
+        conditions.push(ilike(packages.destination, `%${params.destination}%`));
       }
-      if (params.minPrice) {
-        packages = packages.filter(p => p.price >= params.minPrice!);
+      if (params.minPrice !== undefined) {
+        conditions.push(gte(packages.price, params.minPrice));
       }
-      if (params.maxPrice) {
-        packages = packages.filter(p => p.price <= params.maxPrice!);
+      if (params.maxPrice !== undefined) {
+        conditions.push(lte(packages.price, params.maxPrice));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
       }
     }
 
-    return packages;
+    return await query;
   }
 
   async getPackage(id: number): Promise<Package | undefined> {
-    return this.packages.get(id);
+    const [pkg] = await db
+      .select()
+      .from(packages)
+      .where(eq(packages.id, id));
+    return pkg;
   }
 
   async createPackage(pkg: InsertPackage): Promise<Package> {
-    const id = this.currentPackageId++;
-    const newPackage = { ...pkg, id };
-    this.packages.set(id, newPackage);
-    return newPackage;
+    const [created] = await db
+      .insert(packages)
+      .values(pkg)
+      .returning();
+    return created;
   }
 
   async getInquiries(): Promise<Inquiry[]> {
-    return Array.from(this.inquiries.values());
+    return await db.select().from(inquiries);
   }
 
   async createInquiry(inquiry: InsertInquiry): Promise<Inquiry> {
-    const id = this.currentInquiryId++;
-    const newInquiry = { ...inquiry, id };
-    this.inquiries.set(id, newInquiry);
-    return newInquiry;
+    const [created] = await db
+      .insert(inquiries)
+      .values(inquiry)
+      .returning();
+    return created;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
