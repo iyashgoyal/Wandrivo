@@ -140,9 +140,6 @@ export default function Navbar() {
                   <Moon className="h-5 w-5" />
                 )}
               </Button>
-              <Button variant="ghost" size="icon">
-                <Phone className="h-5 w-5" />
-              </Button>
               <Link href="/dashboard">
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />

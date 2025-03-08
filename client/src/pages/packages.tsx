@@ -27,10 +27,11 @@ export default function Packages() {
   const [location] = useLocation();
   const urlParams = new URLSearchParams(location.split("?")[1]);
   const initialCategory = urlParams.get("category") || "All";
+  const initialDestination = urlParams.get("destination") || "";
 
   const [searchParams, setSearchParams] = useState<SearchParams>({
     category: initialCategory !== "All" ? initialCategory : undefined,
-    destination: "",
+    destination: initialDestination,
     minPrice: undefined,
     maxPrice: undefined,
   });
@@ -61,7 +62,7 @@ export default function Packages() {
             type="text"
             placeholder="Search destinations..."
             className="max-w-sm"
-            value={searchParams.destination}
+            value={searchParams.destination || ""}
             onChange={(e) => handleSearch(e.target.value)}
           />
 
@@ -98,11 +99,11 @@ export default function Packages() {
 
         {/* Packages Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-[400px] bg-gray-100 animate-pulse rounded-lg"
+                className="h-[300px] md:h-[400px] bg-gray-100 animate-pulse rounded-lg"
               />
             ))}
           </div>
@@ -113,7 +114,7 @@ export default function Packages() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {packages?.map((pkg, index) => (
               <PackageCard key={pkg.id} package={pkg} index={index} />
             ))}
