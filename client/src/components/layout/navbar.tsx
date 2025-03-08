@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Search, Sun, Phone, User } from "lucide-react";
+import { Menu, X, Search, Moon, Sun, Phone, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,7 +10,15 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
 
 const categories = [
   {
@@ -28,10 +36,22 @@ const categories = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [location] = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [location, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setLocation(`/packages?destination=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b">
+    <nav className="sticky top-0 z-50 bg-background border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -102,11 +122,23 @@ export default function Navbar() {
 
             {/* Right side items */}
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setSearchOpen(true)}
+              >
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
-                <Sun className="h-5 w-5" />
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
               </Button>
               <Button variant="ghost" size="icon">
                 <Phone className="h-5 w-5" />
@@ -165,6 +197,25 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Search Dialog */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Search Destinations</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSearch} className="mt-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search destinations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button type="submit">Search</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }

@@ -21,33 +21,69 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      transition={{ 
+        duration: 0.5, 
+        delay: index * 0.1,
+        type: "spring",
+        stiffness: 100 
+      }}
+      whileHover={{ 
+        y: -5,
+        transition: { duration: 0.2 }
+      }}
+      className="h-full"
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="aspect-video relative overflow-hidden">
-          <img
+      <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow duration-300">
+        <div className="aspect-[4/3] relative overflow-hidden">
+          <motion.img
             src={pkg.imageUrl}
             alt={pkg.title}
-            className="object-cover w-full h-full transform hover:scale-105 transition-transform duration-300"
+            className="object-cover w-full h-full"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
           />
-          <div className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-full">
+          <motion.div 
+            className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-full"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             {formatPrice(pkg.price)}
-          </div>
+          </motion.div>
         </div>
 
-        <CardContent className="p-4">
-          <h3 className="text-xl font-semibold mb-2">{pkg.title}</h3>
-          <p className="text-gray-600 text-sm mb-4">{pkg.description}</p>
+        <CardContent className="p-4 flex-grow">
+          <motion.h3 
+            className="text-xl font-semibold mb-2 line-clamp-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {pkg.title}
+          </motion.h3>
+          <motion.p 
+            className="text-gray-600 text-sm mb-4 line-clamp-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            {pkg.description}
+          </motion.p>
 
-          <div className="flex justify-between text-sm text-gray-500">
+          <motion.div 
+            className="flex justify-between text-sm text-gray-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
             <span>{pkg.duration} days</span>
             <span>{pkg.destination}</span>
-          </div>
+          </motion.div>
         </CardContent>
 
         <CardFooter className="p-4 pt-0">
           <Button 
-            className="w-full"
+            className="w-full bg-primary hover:bg-primary/90"
             onClick={() => setLocation(`/contact?package=${pkg.id}`)}
           >
             Book Now
