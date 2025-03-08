@@ -99,11 +99,11 @@ export default function Packages() {
 
         {/* Packages Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-[300px] md:h-[400px] bg-gray-100 animate-pulse rounded-lg"
+                className="h-[250px] sm:h-[300px] md:h-[350px] bg-gray-100 animate-pulse rounded-lg"
               />
             ))}
           </div>
@@ -114,7 +114,7 @@ export default function Packages() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
             {packages?.map((pkg, index) => (
               <PackageCard key={pkg.id} package={pkg} index={index} />
             ))}

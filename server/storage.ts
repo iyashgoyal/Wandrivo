@@ -18,9 +18,11 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
 
     if (params?.category) {
+      // We need exact match for category
       conditions.push(eq(packages.category, params.category));
     }
     if (params?.destination) {
+      // Case-insensitive partial match for destination
       conditions.push(ilike(packages.destination, `%${params.destination}%`));
     }
     if (params?.minPrice !== undefined) {
@@ -30,11 +32,16 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(packages.price, params.maxPrice));
     }
 
-    const query = conditions.length > 0
-      ? db.select().from(packages).where(and(...conditions))
-      : db.select().from(packages);
+    try {
+      const query = conditions.length > 0
+        ? db.select().from(packages).where(and(...conditions))
+        : db.select().from(packages);
 
-    return await query;
+      return await query;
+    } catch (error) {
+      console.error('Error in getPackages:', error);
+      return [];
+    }
   }
 
   async getPackage(id: number): Promise<Package | undefined> {
