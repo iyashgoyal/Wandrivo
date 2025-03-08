@@ -138,11 +138,11 @@ export default function Contact() {
                 name="budget"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Budget (USD)</FormLabel>
+                    <FormLabel>Budget (₹)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Your budget"
+                        placeholder="Your budget in rupees"
                         {...field}
                         onChange={(e) =>
                           field.onChange(

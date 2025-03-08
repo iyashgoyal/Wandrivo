@@ -21,6 +21,7 @@ export class DatabaseStorage implements IStorage {
       const conditions = [];
 
       if (params.category) {
+        // Ensure exact match for category
         conditions.push(eq(packages.category, params.category));
       }
       if (params.destination) {

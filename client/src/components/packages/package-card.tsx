@@ -12,6 +12,11 @@ interface PackageCardProps {
 export default function PackageCard({ package: pkg, index }: PackageCardProps) {
   const [, setLocation] = useLocation();
 
+  // Format price with Indian Rupee symbol and thousands separator
+  const formatPrice = (price: number) => {
+    return `₹${price.toLocaleString('en-IN')}`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,7 +31,7 @@ export default function PackageCard({ package: pkg, index }: PackageCardProps) {
             className="object-cover w-full h-full transform hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-full">
-            ${pkg.price}
+            {formatPrice(pkg.price)}
           </div>
         </div>
 
