@@ -16,21 +16,22 @@ export default function Hero() {
         className="absolute inset-0 w-full h-full object-cover"
       >
         <source
-          src="https://player.vimeo.com/external/551877742.hd.mp4?s=1f4c2c7af3b7ee2930a89b26e01c5590838e0a94&profile_id=174"
+          src="https://static.vecteezy.com/system/resources/previews/009/420/470/mp4/drone-flying-low-over-sea-mikra-strava-greece-free-video.mp4"
           type="video/mp4"
         />
+        Your browser does not support the video tag.
       </video>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
+      {/* Overlay with gradient for better text visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
       {/* Content */}
-      <div className="relative z-10 text-center text-white px-4">
+      <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-6xl font-bold mb-6"
+          className="text-4xl md:text-6xl font-bold mb-6 text-shadow-lg"
         >
           Discover Your Next Adventure
           <br />
@@ -41,7 +42,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+          className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-shadow-md"
         >
           Experience unforgettable journeys to the world's most breathtaking destinations
         </motion.p>
@@ -54,7 +55,7 @@ export default function Hero() {
           <Button
             size="lg"
             onClick={() => setLocation("/packages")}
-            className="bg-primary hover:bg-primary/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg"
           >
             Explore Packages
           </Button>

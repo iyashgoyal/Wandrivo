@@ -1,13 +1,43 @@
-import { motion } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 export default function About() {
+  // Add scroll-linked animations
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  
+  // Track component mounting for animation improvements
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Preload the hero image immediately
+    const preloadImages = [
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&auto=format&fit=crop&q=80"
+    ];
+    
+    preloadImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   return (
-    <div className="py-16 px-4">
+    <div className="py-16 px-4" ref={containerRef}>
       <div className="container mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={isMounted ? { opacity: 0, y: 20 } : false}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ 
+            duration: 0.4,
+            ease: "easeOut",
+            type: "tween"
+          }}
           className="max-w-4xl mx-auto text-center mb-16"
         >
           <h1 className="text-4xl font-bold mb-6">About Wandrivo</h1>
@@ -18,9 +48,13 @@ export default function About() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            initial={isMounted ? { opacity: 0, x: -20 } : false}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ 
+              duration: 0.4, 
+              ease: "easeOut",
+            }}
           >
             <h2 className="text-3xl font-bold mb-4">Our Story</h2>
             <p className="text-gray-600 mb-4">
@@ -32,13 +66,17 @@ export default function About() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="aspect-video rounded-lg overflow-hidden"
+            initial={isMounted ? { opacity: 0, scale: 0.95 } : false}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ 
+              duration: 0.4,
+              ease: "easeOut"
+            }}
+            className="aspect-video rounded-lg overflow-hidden shadow-lg"
           >
-            <img
-              src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"
+            <OptimizedImage
+              src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&auto=format&fit=crop&q=80"
               alt="Travel team"
               className="w-full h-full object-cover"
             />
@@ -47,29 +85,48 @@ export default function About() {
 
         {/* Values */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          initial={isMounted ? { opacity: 0, y: 20 } : false}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ 
+            duration: 0.4,
+            staggerChildren: 0.08,
+            type: "tween",
+            ease: "easeOut"
+          }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
         >
-          <div className="text-center p-6">
-            <h3 className="text-xl font-bold mb-3">Passion</h3>
-            <p className="text-gray-600">
-              We're passionate about travel and sharing the world's wonders with our clients.
-            </p>
-          </div>
-          <div className="text-center p-6">
-            <h3 className="text-xl font-bold mb-3">Excellence</h3>
-            <p className="text-gray-600">
-              We strive for excellence in every journey we plan and every service we provide.
-            </p>
-          </div>
-          <div className="text-center p-6">
-            <h3 className="text-xl font-bold mb-3">Innovation</h3>
-            <p className="text-gray-600">
-              We constantly innovate to create unique and memorable travel experiences.
-            </p>
-          </div>
+          {/* Value cards with individual animations */}
+          {[
+            {
+              title: "Passion",
+              description: "We're passionate about travel and sharing the world's wonders with our clients."
+            },
+            {
+              title: "Excellence",
+              description: "We strive for excellence in every journey we plan and every service we provide."
+            },
+            {
+              title: "Innovation",
+              description: "We constantly innovate to create unique and memorable travel experiences."
+            }
+          ].map((value, index) => (
+            <motion.div 
+              key={value.title}
+              initial={isMounted ? { opacity: 0, y: 15 } : false}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ 
+                duration: 0.3, 
+                delay: index * 0.08,
+                ease: "easeOut"
+              }}
+              className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 className="text-xl font-bold mb-3">{value.title}</h3>
+              <p className="text-gray-600">{value.description}</p>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </div>

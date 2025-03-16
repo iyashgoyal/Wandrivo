@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { Menu, X, Search, Moon, Sun, Phone, User } from "lucide-react";
 import {
   NavigationMenu,
@@ -20,31 +20,30 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 
-const categories = [
-  {
-    name: "Travel Packages",
-    items: [
-      { name: "Domestic Trips", href: "/packages?category=Domestic Trips" },
-      { name: "International Trips", href: "/packages?category=International Trips" },
-      { name: "Group Tours", href: "/packages?category=Group Tours" },
-      { name: "Honeymoon Packages", href: "/packages?category=Honeymoon Packages" },
-      { name: "Weekend Getaways", href: "/packages?category=Weekend Getaways" },
-      { name: "Adventure Trips", href: "/packages?category=Adventure Trips" },
-    ]
-  }
-];
-
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [location, setLocation] = useLocation();
+  const [location, navigate] = useLocation();
+  const [isPackagesPage] = useRoute("/packages");
   const { theme, setTheme } = useTheme();
+
+  // Helper function to check if a path is the current active path
+  const isActivePath = (path: string) => {
+    if (path === "/") {
+      return location === "/";
+    }
+    return location.startsWith(path);
+  };
+
+  // Common style for active links
+  const activeStyle = "bg-green-100 text-green-900";
+  const hoverStyle = "hover:bg-green-50";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setLocation(`/packages?destination=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/packages?destination=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setSearchQuery("");
     }
@@ -69,8 +68,8 @@ export default function Navbar() {
                   <Link href="/">
                     <NavigationMenuLink 
                       className={cn(
-                        "px-3 py-2 hover:text-primary transition-colors",
-                        location === "/" && "text-primary"
+                        "px-4 py-2 rounded-md transition-colors font-medium",
+                        isActivePath("/") ? activeStyle : hoverStyle
                       )}
                     >
                       Home
@@ -81,8 +80,8 @@ export default function Navbar() {
                   <Link href="/about">
                     <NavigationMenuLink 
                       className={cn(
-                        "px-3 py-2 hover:text-primary transition-colors",
-                        location === "/about" && "text-primary"
+                        "px-4 py-2 rounded-md transition-colors font-medium",
+                        isActivePath("/about") ? activeStyle : hoverStyle
                       )}
                     >
                       About Us
@@ -90,27 +89,23 @@ export default function Navbar() {
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Travel Packages</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                      {categories[0].items.map((item) => (
-                        <li key={item.name}>
-                          <Link href={item.href}>
-                            <NavigationMenuLink className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                              {item.name}
-                            </NavigationMenuLink>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
+                  <Link href="/packages">
+                    <NavigationMenuLink 
+                      className={cn(
+                        "px-4 py-2 rounded-md transition-colors font-medium",
+                        isActivePath("/packages") ? activeStyle : hoverStyle
+                      )}
+                    >
+                      Travel Packages
+                    </NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link href="/contact">
                     <NavigationMenuLink 
                       className={cn(
-                        "px-3 py-2 hover:text-primary transition-colors",
-                        location === "/contact" && "text-primary"
+                        "px-4 py-2 rounded-md transition-colors font-medium",
+                        isActivePath("/contact") ? activeStyle : hoverStyle
                       )}
                     >
                       Contact Us
@@ -167,27 +162,42 @@ export default function Navbar() {
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link href="/">
-              <a className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary hover:bg-gray-50">
+              <a className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium",
+                isActivePath("/") ? activeStyle : "hover:bg-gray-50"
+              )}>
                 Home
               </a>
             </Link>
             <Link href="/about">
-              <a className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary hover:bg-gray-50">
+              <a className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium",
+                isActivePath("/about") ? activeStyle : "hover:bg-gray-50"
+              )}>
                 About Us
               </a>
             </Link>
             <Link href="/packages">
-              <a className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary hover:bg-gray-50">
+              <a className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium",
+                isActivePath("/packages") ? activeStyle : "hover:bg-gray-50"
+              )}>
                 Travel Packages
               </a>
             </Link>
             <Link href="/contact">
-              <a className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary hover:bg-gray-50">
+              <a className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium",
+                isActivePath("/contact") ? activeStyle : "hover:bg-gray-50"
+              )}>
                 Contact Us
               </a>
             </Link>
             <Link href="/dashboard">
-              <a className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary hover:bg-gray-50">
+              <a className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium",
+                isActivePath("/dashboard") ? activeStyle : "hover:bg-gray-50"
+              )}>
                 Dashboard
               </a>
             </Link>

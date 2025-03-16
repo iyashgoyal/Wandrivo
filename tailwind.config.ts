@@ -10,6 +10,11 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      textShadow: {
+        sm: '0 1px 2px rgba(0, 0, 0, 0.3)',
+        md: '0 2px 4px rgba(0, 0, 0, 0.4)',
+        lg: '0 3px 6px rgba(0, 0, 0, 0.5)',
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -84,7 +89,30 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      backdropBlur: {
+        xs: '2px',
+      },
+      blur: {
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    function({ addUtilities, theme }) {
+      const textShadows = theme('textShadow');
+      const utilities = {};
+      
+      Object.entries(textShadows).forEach(([key, value]) => {
+        utilities[`.text-shadow-${key}`] = {
+          textShadow: value,
+        };
+      });
+      
+      addUtilities(utilities);
+    },
+  ],
 } satisfies Config;

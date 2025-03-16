@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Package, SearchParams } from "@shared/schema";
 import PackageCard from "@/components/packages/package-card";
@@ -32,10 +32,16 @@ const categories = [
   "All",
   "Domestic Trips",
   "International Trips",
-  "Group Tours",
-  "Honeymoon Packages",
   "Weekend Getaways",
-  "Adventure Trips",
+  "Honeymoon Packages",
+  "Cultural",
+  "Beach",
+  "Mountain",
+  "City",
+  "National Park",
+  "Adventure",
+  "Relaxation",
+  "Wellness"
 ];
 
 const sortOptions = [
@@ -45,34 +51,140 @@ const sortOptions = [
   { value: "duration_desc", label: "Duration: Longest to Shortest" },
 ];
 
-export default function Packages() {
-  const [location] = useLocation();
-  const urlParams = new URLSearchParams(location.split("?")[1]);
-  const initialCategory = urlParams.get("category") || "All";
-  const initialDestination = urlParams.get("destination") || "";
+// Update the priceRangeOptions with more appropriate price ranges for Indian rupees
+const priceRangeOptions = [
+  { value: "all", label: "All Prices" },
+  { value: "0-30000", label: "Under ₹30,000" },
+  { value: "30000-50000", label: "₹30,000 - ₹50,000" },
+  { value: "50000-100000", label: "₹50,000 - ₹1,00,000" },
+  { value: "100000-150000", label: "₹1,00,000 - ₹1,50,000" },
+  { value: "150000-999999", label: "Above ₹1,50,000" },
+];
 
+export default function Packages() {
+  // Get location and navigation from wouter
+  const [location, navigate] = useLocation();
+  
+  // Parse URL parameters
+  const urlParams = new URLSearchParams(location.split("?")[1] || "");
+  
+  // Get initial filter values from URL parameters with proper decoding
+  const initialCategory = urlParams.get("category") ? decodeURIComponent(urlParams.get("category")!) : "All";
+  const initialDestination = urlParams.get("destination") ? decodeURIComponent(urlParams.get("destination")!) : "";
+  
+  // Parse initial price range if present
+  const initialMinPrice = urlParams.get("minPrice") ? Number(urlParams.get("minPrice")) : undefined;
+  const initialMaxPrice = urlParams.get("maxPrice") ? Number(urlParams.get("maxPrice")) : undefined;
+  
+  // Debugging the initial state
+  console.log("Initial Filters:", {
+    category: initialCategory,
+    destination: initialDestination,
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
+    url: location
+  });
+
+  // Initialize search params from URL
   const [searchParams, setSearchParams] = useState<SearchParams>({
     category: initialCategory !== "All" ? initialCategory : undefined,
     destination: initialDestination,
-    minPrice: undefined,
-    maxPrice: undefined,
+    minPrice: initialMinPrice,
+    maxPrice: initialMaxPrice,
     minDuration: undefined,
     maxDuration: undefined,
     sortBy: undefined,
   });
-
+  
+  // Store selected category for the UI
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  
+  // Update selected category when search params change
+  useEffect(() => {
+    setSelectedCategory(searchParams.category || "All");
+  }, [searchParams.category]);
+  
+  // Synchronize URL with filters
+  useEffect(() => {
+    const newUrlParams = new URLSearchParams();
+    
+    // Only add parameters that have values
+    if (searchParams.category) {
+      newUrlParams.set("category", searchParams.category);
+    }
+    
+    if (searchParams.destination) {
+      newUrlParams.set("destination", searchParams.destination);
+    }
+    
+    if (searchParams.minPrice !== undefined) {
+      newUrlParams.set("minPrice", searchParams.minPrice.toString());
+    }
+    
+    if (searchParams.maxPrice !== undefined) {
+      newUrlParams.set("maxPrice", searchParams.maxPrice.toString());
+    }
+    
+    if (searchParams.sortBy) {
+      newUrlParams.set("sortBy", searchParams.sortBy);
+    }
+    
+    // Update URL without causing a navigation (replace state)
+    const newUrl = newUrlParams.toString() 
+      ? `/packages?${newUrlParams.toString()}`
+      : '/packages';
+      
+    if (location !== newUrl) {
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, [searchParams, location]);
+  
+  // Query packages with search parameters
   const { data: packages, isLoading } = useQuery<Package[]>({
     queryKey: ["/api/packages", searchParams],
   });
 
+  // Handler functions for filter changes
   const handleSearch = (destination: string) => {
-    setSearchParams((prev) => ({ ...prev, destination }));
+    setSearchParams(prev => ({ ...prev, destination }));
   };
 
   const handleCategoryChange = (category: string) => {
-    setSearchParams((prev) => ({
+    // Update the UI state immediately
+    setSelectedCategory(category);
+    
+    // Update the search params (which will trigger API call)
+    setSearchParams(prev => ({
       ...prev,
       category: category === "All" ? undefined : category,
+    }));
+    
+    // Force URL update for better debugging
+    const newUrl = category === "All" 
+      ? '/packages'
+      : `/packages?category=${encodeURIComponent(category)}`;
+    window.history.replaceState(null, '', newUrl);
+  };
+
+  const handlePriceRangeChange = (value: string) => {
+    console.log("Price range changed:", value);
+    
+    if (value === "all") {
+      setSearchParams(prev => ({
+        ...prev,
+        minPrice: undefined,
+        maxPrice: undefined,
+      }));
+      return;
+    }
+    
+    // Parse min and max from the range value (e.g., "1000-1499")
+    const [min, max] = value.split('-').map(Number);
+    
+    setSearchParams(prev => ({
+      ...prev,
+      minPrice: min || undefined,
+      maxPrice: max || undefined,
     }));
   };
 
@@ -97,6 +209,33 @@ export default function Packages() {
       ...prev,
       sortBy: value as SearchParams["sortBy"],
     }));
+  };
+
+  // Improved function to get current price range value
+  const getCurrentPriceRangeValue = () => {
+    const { minPrice, maxPrice } = searchParams;
+    
+    // If no price filters are set, return "all"
+    if (minPrice === undefined && maxPrice === undefined) {
+      return "all";
+    }
+    
+    // Check if current min/max matches any of our predefined ranges
+    for (const option of priceRangeOptions) {
+      if (option.value === "all") continue;
+      
+      const [rangeMin, rangeMax] = option.value.split('-').map(Number);
+      
+      // If both min and max match exactly
+      if (minPrice === rangeMin && 
+          (maxPrice === rangeMax || 
+           (rangeMax === 99999 && maxPrice === undefined))) {
+        return option.value;
+      }
+    }
+    
+    // Custom range that doesn't match predefined options
+    return "all";
   };
 
   return (
@@ -124,7 +263,7 @@ export default function Packages() {
                   <div>
                     <label className="text-sm font-medium">Category</label>
                     <Select
-                      value={searchParams.category || "All"}
+                      value={selectedCategory}
                       onValueChange={handleCategoryChange}
                     >
                       <SelectTrigger>
@@ -174,7 +313,7 @@ export default function Packages() {
           />
 
           <Select
-            value={searchParams.category || "All"}
+            value={selectedCategory}
             onValueChange={handleCategoryChange}
           >
             <SelectTrigger className="w-[200px]">
@@ -189,8 +328,25 @@ export default function Packages() {
             </SelectContent>
           </Select>
 
+          {/* Add Price Range Filter */}
           <Select
-            value={searchParams.sortBy}
+            value={getCurrentPriceRangeValue()}
+            onValueChange={handlePriceRangeChange}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Price range" />
+            </SelectTrigger>
+            <SelectContent>
+              {priceRangeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={searchParams.sortBy || ""}
             onValueChange={handleSortChange}
           >
             <SelectTrigger className="w-[200px]">
@@ -207,7 +363,11 @@ export default function Packages() {
 
           <Button
             variant="outline"
-            onClick={() =>
+            onClick={() => {
+              // Reset UI state
+              setSelectedCategory("All");
+              
+              // Reset search params
               setSearchParams({
                 category: undefined,
                 destination: "",
@@ -216,8 +376,11 @@ export default function Packages() {
                 minDuration: undefined,
                 maxDuration: undefined,
                 sortBy: undefined,
-              })
-            }
+              });
+              
+              // Update URL directly for immediate visual feedback
+              window.history.replaceState(null, '', '/packages');
+            }}
           >
             Clear Filters
           </Button>
