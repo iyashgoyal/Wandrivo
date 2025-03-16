@@ -1,6 +1,54 @@
+# Dependencies
 node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
 dist
-.DS_Store
+build
 server/public
-vite.config.ts.*
+.next
+out
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# IDE and editor files
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.log
 *.tar.gz
+.cache
+.temp
+.tmp
+vite.config.ts.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
