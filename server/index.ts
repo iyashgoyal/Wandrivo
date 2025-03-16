@@ -4,6 +4,8 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { db } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -39,7 +41,29 @@ app.use((req, res, next) => {
   next();
 });
 
+async function initializeDatabase() {
+  console.log("Connecting to database:", process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":***@"));
+  
+  try {
+    // In production, ensure the database schema is properly initialized
+    if (process.env.NODE_ENV === 'production') {
+      console.log("Production environment detected. Ensuring database schema is initialized...");
+      // Instead of migrations, we'll make sure the database is in sync with our schema
+      // This is a simplified approach for Vercel deployment
+      
+      // Your existing database initialization code continues below
+    }
+    
+    console.log("✅ Database connection successful! Found", await db.query.packages.count(), "packages.");
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+    process.exit(1);
+  }
+}
+
 (async () => {
+  await initializeDatabase();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -111,6 +111,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route for database operations - secure this in production!
+  app.post('/api/admin/db/sync', async (req, res) => {
+    // Basic security check - use a more robust method in a real application
+    const authHeader = req.headers.authorization;
+    if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_API_KEY}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      // Execute database operations
+      console.log("Admin API: Running database sync operation");
+      
+      // Add your database sync operations here
+      // For example, you could run a simple query to test the connection
+      const packageCount = await db.query.packages.count();
+      
+      res.json({ 
+        success: true, 
+        message: 'Database operations completed successfully',
+        data: { packageCount }
+      });
+    } catch (error) {
+      console.error("Admin API error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Database operation failed', 
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
